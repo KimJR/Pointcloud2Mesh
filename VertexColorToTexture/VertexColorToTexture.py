@@ -22,9 +22,12 @@ for t in mesh.faces:
     sqyEnd = max(y1, y2, y3)
 
     #cycle through each pixel within the square to see if the pixel is within the triangle
-    for y in range (sqyStart*colorTexture.width, sqyEnd*colorTexture.width):
-        for x in range (sqyStart*colorTexture.width, sqyEnd*colorTexture.width):
+    for y in range (int(sqyStart*colorMap.width), int(sqyEnd*colorMap.width)):
+        for x in range (int(sqyStart*colorMap.width), int(sqyEnd*colorMap.width)):
 	        
+            xNorm = x/colorMap.width #x normalized to value between 0 and 1 (easier to calculate)
+            yNorm = y/colorMap.width #y normalized to value between 0 and 1 (easier to calculate)
+
             #get factors a, b, c such that 
             #x = a * x1 + b * x2  + c * x3
             #y = a * y1 + b * y2 + c * y3
@@ -38,10 +41,10 @@ for t in mesh.faces:
 
 	            #color the pixel depending on the lerp between the three pixels
 	            pixelColor = a*t.vertex[0].color + b*t.vertex[1].color + c*t.vertex[2].color
-	            colorMap.SetPixel(int(x*colorTexture.width), int(y*colorTexture.width), pixelColor)
+	            colorMap.SetPixel(x, y, pixelColor)
 
-                pixelNormalColor = (a*t.vertex[0].normal + b*t.vertex[1].normal + c*t.vertex[2].normal)/2 + vector3(0.5,0.5,0.5)
-                normalMap.SetPixel(int(x*colorTexture.width), int(y*colorTexture.width), pixelNormalColor)
+                pixelNormalColor = (a*t.vertex[0].normal + b*t.vertex[1].normal + c*t.vertex[2].normal)/2 + Vector3(0.5,0.5,0.5)
+                normalMap.SetPixel(x, y, pixelNormalColor)
 
                 pixelPositionColor = (a*t.vertex[0].position + b*t.vertex[1].position + c*t.vertex[2].position)
-                positionMap.SetPixel(int(x*colorTexture.width), int(y*colorTexture.width), pixelPositionColor)
+                positionMap.SetPixel(x, y, pixelPositionColor)
