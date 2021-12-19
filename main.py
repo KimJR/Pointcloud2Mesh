@@ -1,46 +1,23 @@
-from src.InputParser import *
-from src.PointCloud import *
-
-# Ply files
-BUNNY = "StanfordBunny.ply"
-SKELETON = "SkeletonHand.ply"
-BUDDHA = "HappyBuddha.ply"
-DRAGON = "Dragon.ply"
-# pcd files
-BUNNY2 = "bunny.pcd"
-
-# Visualization
-SHOW_NORMAL = True
-VISUALIZE = [True, SHOW_NORMAL]
-
-
-if __name__ == '__main__':
-
-    # |1| Parser: import ply/pcd file
-
-    file = InputParser(BUNNY2, VISUALIZE)
-    print('FILE INFO %*s: %*s' % (10, file.filename, 10, file.datatype))
-
-    #     Initialize Pointcloud Obj.
-    pcd = Pointcloud(file)
+import open3d.visualization.gui as gui
+from src.GuiInterface import GUI
+import platform
+import os
 
 
 
 
+def main():
+    # initalize the application
+    gui.Application.instance.initialize()
+
+    main_dir = os.getcwd() # main directory
+    my_os = platform.system() #operation system
+
+    w = GUI(main_dir, my_os)
+
+    # Run the event loop.
+    gui.Application.instance.run()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    main()
