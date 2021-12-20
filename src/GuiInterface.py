@@ -165,9 +165,9 @@ class GUI:
     '''
     def _on_filedlg_button(self):
         filedlg = gui.FileDialog(gui.FileDialog.OPEN, "Select input file", self.window.theme)
-        filedlg.add_filter(".ply .models .xyz .pts ", "Point cloud files (.ply, .models, .xyz, .pts)")
+        filedlg.add_filter(".ply .pcd .xyz .pts ", "Point cloud files (.ply, .pcd, .xyz, .pts)")
         filedlg.add_filter(".ply", "Polygon files (.ply)")
-        filedlg.add_filter(".models", "Point Cloud Data files (.models)")
+        filedlg.add_filter(".pcd", "Point Cloud Data files (.pcd)")
         filedlg.add_filter(".xyz", "ASCII point cloud files (.xyz)")
         filedlg.add_filter(".pts", "3D Points files (.pts)")
         filedlg.add_filter("", "All files")
