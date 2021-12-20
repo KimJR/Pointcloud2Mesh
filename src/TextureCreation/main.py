@@ -21,8 +21,8 @@ def poisson_reconstruction(input_file: str="eagle.points.ply", output_file:str="
     :return: The output file is saved under PoissonRecon/Bin/Linux under the name specified in output_file, default file
              name is "eagle.output.ply"
     '''
-    path = "../PoissonRecon/Bin/Linux"
-    file = "../PoissonRecon"
+    path = "../../ext/PoissonRecon/Bin/Linux"
+    file = "../../ext/PoissonRecon"
     if input_file is not None and len(input_file) < 2:
         print("Input file name is invalid. Default file is used.")
         input_file = "eagle.points.ply"
@@ -51,7 +51,7 @@ def main():
 
     os.chdir(previous_dir)
 
-    mesh = trimesh.load_mesh("../PoissonRecon/Bin/Linux/eagle.output.ply")
+    mesh = trimesh.load_mesh("../../ext/PoissonRecon/Bin/Linux/eagle.output.ply")
     print(mesh)
     print("Vertices: ", mesh.vertices)
     print("Faces: ", mesh.faces)
