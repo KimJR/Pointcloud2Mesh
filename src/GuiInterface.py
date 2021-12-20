@@ -4,6 +4,7 @@ import open3d.visualization.rendering as rendering
 from src.GuiParameters import Parameters
 from src.PoissonReconstruction import run_poisson_reconstruction
 from src.UVMapping import run_xatlas
+from VertexColorToTexture.VertexColorToTexture import get_texture_from_vertex_color
 import numpy as np
 
 
@@ -332,7 +333,9 @@ class GUI:
 
     def _on_calculate_uvmap(self):
         # run xatlas
-        run_xatlas(self, self.settings.output_file)
+        # run_xatlas(self, self.settings.output_file)
+        # output_file is the file where the output from mesh generation was stored
+        get_texture_from_vertex_color(self.settings.output_file)
 
         # apply settings
         self.apply_settings()

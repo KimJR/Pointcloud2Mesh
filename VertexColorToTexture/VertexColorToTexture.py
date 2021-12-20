@@ -12,10 +12,9 @@ def get_texture_from_vertex_color(input_file:str):
 
 
     #vmapping, indices, uvs = xatlas.parametrize(mesh.vertices, mesh.faces)
-
     #xatlas.export(str(input_file)+".obj", mesh.vertices[vmapping], indices, uvs)
-
-    if not input_file.endswith(".obj", -5, -1):#
+    print(input_file)
+    if not input_file.endswith(".obj", -5, -1):
         print(".obj-File was expected for texture generation")
         return
 
