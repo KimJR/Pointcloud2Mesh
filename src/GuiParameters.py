@@ -3,33 +3,42 @@ import open3d.visualization.gui as gui
 
 
 class Parameters:
+    # first tab
+    out_selected = True             # name of output file (default: mesh)
+    color_selected = True           # color value (default 16)
+    confidence_selected = False
 
-    out_selected = True
-    color_selected = True
-    threads_selected = False
-    pointWeight_selected = False
-    voxel_selected = False
-    depth_selected = False
+    # second tab
+    density_selected = False
+    verbose_selected = False
+    linearFit_selected = False
+    primalVoxel_selected = False
+    nWeights_selected = False
+    polygonMesh_selected = False
+
+    # third tab
     fullDepth_selected = False
     voxelDepth_selected = False
     cgDepth_selected = False
-    scale_selected = False
-    samplesPerNode_selected = False
-    iters_selected = False
-    polygonMesh_selected = False
-    density_selected = False
-    primalVoxel_selected = False
-    confidence_selected = False
-    verbose_selected = False
-    linearFit_selected = False
-    nWeights_selected = False
-    degree_selected = False
+
+    # fourth tab
+    depth_selected = False          # maximal depth of tree for surface reconstruction (default 8)
+    iters_selected = False          # number of gauss-seidel relaxation at each iteration (default 8)
+    degree_selected = False         # degree of B-spline: larger degree = higher order (default 2)
+
+    # fifth tab
+    threads_selected = False        # number of threads used for parallelization for reconstruntion (default 0)
+    pointWeight_selected = False    # importance for interpolation of point samples (default 4)
+    samplesPerNode_selected = False  # min number of samples per node in octry; adapted to density (default 1.000)
+
+    scale_selected = False          # ratio of cube diameter for reconstruction and those for bounding (default 1.100)
+    voxel_selected = False          # name of file to which the sampled implicit function is written
 
     def __init__(self):
         # 1 --out <name>
         self.out = gui.Checkbox("--out")
         self.out.tooltip = "Name of the file to which the triangle mesh will be written (.ply)"
-        #self.out.set_on_checked(self.on_out)
+        # self.out.set_on_checked(self.on_out)
         self.out_name = gui.TextEdit()
         self.out_name.Constraints.width=0.4
         self.out_name.text_value = "mesh"

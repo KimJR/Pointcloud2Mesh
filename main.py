@@ -7,6 +7,11 @@ import os
 
 
 def main():
+    '''
+    Main method of the Computer Graphics Project Group 'Point cloud to mesh'.
+    Start the application to run by creating an instance of our GUIInterface
+    :return: None
+    '''
     # initalize the application
     gui.Application.instance.initialize()
 

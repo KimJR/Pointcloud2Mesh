@@ -1,9 +1,9 @@
 import open3d as o3d
 import open3d.visualization.gui as gui
 import open3d.visualization.rendering as rendering
-from GuiParameters import Parameters
-from PoissonReconstruction import run_poisson_reconstruction
-from UVMapping import run_xatlas
+from src.GuiParameters import Parameters
+from src.PoissonReconstruction import run_poisson_reconstruction
+from src.UVMapping import run_xatlas
 import numpy as np
 
 
@@ -36,6 +36,7 @@ class GUI:
         # create window
         self.window = gui.Application.instance.create_window("Poisson Surface Reconstruction", 1000, 700)
         w = self.window  # for more concise code
+
 
         # set the window's layout
         w.set_on_layout(self._on_layout)
@@ -182,11 +183,62 @@ class GUI:
         self.window.close_dialog()
 
     def _on_filedlg_done(self, path):
+        self.window.close_dialog()  # first close file dialog window to indicate user that it was selected
         self._fileedit.text_value = path
         self.settings.input_file = path
-        self.window.close_dialog()
         self.check_loaded_file(path)
         self.plot_pointcloud()
+        self.load(path)
+
+    def load(self, path):
+        '''
+        Method is basically from: https://github.com/isl-org/Open3D/blob/master/examples/python/gui/vis-gui.py
+        '''
+        self.widget.scene.clear_geometry()
+
+        geometry = None
+        geometry_type = o3d.io.read_file_geometry_type(path)
+
+        mesh = None
+        if geometry_type & o3d.io.CONTAINS_TRIANGLES:
+            mesh = o3d.io.read_triangle_mesh(path)
+        if mesh is not None:
+            if len(mesh.triangles) == 0:
+                # Probably always the case for this project
+                print(
+                    "[INFO] Contains 0 triangles, will read as point cloud")
+                mesh = None
+            else:
+                mesh.compute_vertex_normals()
+                if len(mesh.vertex_colors) == 0:
+                    mesh.paint_uniform_color([1, 1, 1])
+                geometry = mesh
+            # Make sure the mesh has texture coordinates
+            if not mesh.has_triangle_uvs():
+                uv = np.array([[0.0, 0.0]] * (3 * len(mesh.triangles)))
+                mesh.triangle_uvs = o3d.utility.Vector2dVector(uv)
+        else:
+            print("[Info]", path, "seems to be a point cloud. :)")
+
+        if geometry is None:
+            cloud = o3d.io.read_point_cloud(path)
+            if cloud is not None:
+                print("[Info] Successfully read", path)
+                if not cloud.has_normals():
+                    cloud.estimate_normals()
+                cloud.normalize_normals()
+                geometry = cloud
+            else:
+                print("[WARNING] Failed to read points", path)
+
+        if geometry is not None:
+            try:
+                self.widget.scene.add_geometry("__model__", geometry,
+                                               self.settings.material)
+                bounds = geometry.get_axis_aligned_bounding_box()
+                self.widget.setup_camera(60, bounds, bounds.get_center())
+            except Exception as e:
+                print(e)
 
     '''
        Menü bar Quit

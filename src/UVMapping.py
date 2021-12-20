@@ -2,8 +2,8 @@ import open3d as o3d
 import open3d.visualization.gui as gui
 import os
 import trimesh
+# might need to be installed with e.g.: conda install -c bioconda xatlas
 import xatlas
-
 
 def run_xatlas(self, input_file):
     # v <float X> <float Y> <float Z> [ <float W> ] Beschreibung eines Eckpunktes (engl. vertex).
