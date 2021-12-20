@@ -53,9 +53,6 @@
     <ClInclude Include="Src\Geometry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Hash.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Src\MarchingCubes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -78,9 +75,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\SparseMatrix.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Vector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\MAT.h">
@@ -116,9 +110,6 @@
       <Filter>Include Files</Filter>
     </None>
     <None Include="Src\SparseMatrix.inl">
-      <Filter>Include Files</Filter>
-    </None>
-    <None Include="Src\Vector.inl">
       <Filter>Include Files</Filter>
     </None>
     <None Include="Src\PointStream.inl">
