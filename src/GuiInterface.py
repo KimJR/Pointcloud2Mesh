@@ -1,9 +1,9 @@
 import open3d as o3d
 import open3d.visualization.gui as gui
 import open3d.visualization.rendering as rendering
-from src.GuiParameters import Parameters
-from src.PoissonReconstruction import run_poisson_reconstruction
-from src.UVMapping import run_xatlas
+from GuiParameters import Parameters
+from PoissonReconstruction import run_poisson_reconstruction
+from UVMapping import run_xatlas
 import numpy as np
 
 

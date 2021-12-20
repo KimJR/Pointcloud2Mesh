@@ -19,35 +19,28 @@ def run_poisson_reconstruction(self, input_file: str="input.ply", output_file:st
     :return: The output file is saved under PoissonRecon/Bin/Linux under the name specified in output_file, default file
              name is "eagle.output.ply"
     '''
+    path = ""
+    file = ""
     # for windows os
     if self.settings.my_os == 'Windows':
         path = "/ext/PoissonRecon.x64/"
         file = "PoissonRecon.x64.exe"
-        # call PoissonRecon to get the output mesh
-        if not os.path.exists(self.settings.main_dir+path):
-            print(" PoissonRecon.x64.exe could not be found at expectd location: ", path)
-            return
-        os.chdir(self.settings.main_dir+path)
 
     # for linux os
     if self.settings.my_os == 'Linux':
         path = "/ext/PoissonRecon/Bin/Linux"
         file = "./PoissonRecon"
-        # call PoissonRecon to get the output mesh
-        if not os.path.exists(self.settings.main_dir + path):
-            print(" PoissonRecon could not be found at expectd location: ", path)
-            return
-        os.chdir(self.settings.main_dir + path)
 
     # for macOs
     if self.settings.my_os == 'Darwin':
         path = "/ext/PoissonRecon/Bin/Linux"
         file = "./PoissonRecon"
-        # call PoissonRecon to get the output mesh
-        if not os.path.exists(self.settings.main_dir + path):
-            print(" PoissonRecon could not be found at expectd location: ", path)
-            return
-        os.chdir(self.settings.main_dir + path)
+
+    # call PoissonRecon to get the output mesh
+    if not os.path.exists(self.settings.main_dir + path):
+        print(" PoissonRecon could not be found at expectd location: ", path)
+        return
+    os.chdir(self.settings.main_dir + path)
 
     # add according parameter if specified in valid form (defaults here are also defaults of PoissonRecon)
     command = "{} --in {} --out {} ".format(file, input_file, output_file)
