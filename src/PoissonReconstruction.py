@@ -28,32 +28,29 @@ def run_poisson_reconstruction(self, input_file: str="input.ply", output_file:st
             print(" PoissonRecon.x64.exe could not be found at expectd location: ", path)
             return
         os.chdir(self.settings.main_dir+path)
-        command = "{} ".format(file)
 
     # for linux os
     if self.settings.my_os == 'Linux':
-        path = "../ext/PoissonRecon/Bin/Linux"
+        path = "/ext/PoissonRecon/Bin/Linux"
         file = "./PoissonRecon"
         # call PoissonRecon to get the output mesh
         if not os.path.exists(self.settings.main_dir + path):
             print(" PoissonRecon could not be found at expectd location: ", path)
             return
         os.chdir(self.settings.main_dir + path)
-        command = "sudo {} ".format(file)
 
     # for macOs
     if self.settings.my_os == 'Darwin':
-        path = "../ext/PoissonRecon/Bin/Linux"
+        path = "/ext/PoissonRecon/Bin/Linux"
         file = "./PoissonRecon"
         # call PoissonRecon to get the output mesh
         if not os.path.exists(self.settings.main_dir + path):
             print(" PoissonRecon could not be found at expectd location: ", path)
             return
         os.chdir(self.settings.main_dir + path)
-        command = "sudo {} ".format(file)
 
     # add according parameter if specified in valid form (defaults here are also defaults of PoissonRecon)
-    command += "--in {} --out {} ".format(input_file, output_file)
+    command = "{} --in {} --out {} ".format(file, input_file, output_file)
 
     if self.param.linearFit_selected:
         command += "--linearFit "
