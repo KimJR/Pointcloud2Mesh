@@ -32,7 +32,7 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
     mesh.add_attribute("vertex_color")
     color_map = mesh.get_vertex_attribute("vertex_color")    # contains the color per vertex
     if color_map.size == 0:
-        color_map = np.zeros([number_of_vertices, 3], dtype=int)  # because its read only.
+        color_map = np.zeros((number_of_vertices, 3), dtype=int)  # because its read only.
         # fill with random color:
         for i in range(number_of_vertices):
             color_map[i] = np.random.choice(256, size=3)
@@ -43,6 +43,12 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
 
     ### UV COORDINATES (of Vertices)
     uv_coordinates = get_uv_coordinates(input_file, number_of_vertices)
+
+    ### INIT storing arrays
+    textureShape = (textureWidth, textureWidth, 3)
+    pixel_colors = np.zeros(textureShape, dtype=np.uint8)         # the texture to which the color will be mapped
+    normal_pixel_colors = np.zeros(textureShape, dtype=np.uint8)  # the texture to which the normal color will be mapped
+    position_map = np.zeros(textureShape, dtype=np.uint8)         # the texture to which the position of the vertices will be mapped
 
     # process faces
     faces = mesh.faces
@@ -66,20 +72,10 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
         sqyStart = int(min(y1, y2, y3)*textureWidth)
         sqyEnd = int(max(y1, y2, y3)*textureWidth)
 
-        xDim = range(sqxStart, sqxEnd)
-        yDim = range(sqyStart, sqyEnd)
-        sqrShape = (len(xDim), len(yDim), 3)  # last dimension is for color channels
-        print(sqrShape)
-        ### INIT storing arrays
-        pixel_colors = np.zeros(sqrShape, dtype=np.uint8)         # the texture to which the color will be mapped
-        normal_pixel_colors = np.zeros(sqrShape, dtype=np.uint8)  # the texture to which the normal color will be mapped
-        position_map = np.zeros(sqrShape, dtype=np.uint8)         # the texture to which the position of the vertices will be mapped
-
-
         # TODO  parallelize: buffer texture -> join those
         # cycle through each pixel within the square to see if the pixel is within the triangle
-        for y in yDim:
-            for x in xDim:
+        for y in range(sqyStart, sqyEnd):
+            for x in range(sqxStart, sqxEnd):
                 print("POINT: ", x, " ", y)
 
                 xNorm = x / textureWidth  # x normalized to value between 0 and 1 (easier to calculate)
@@ -99,10 +95,9 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
                 print(a, " ", b, " ", c)
                 # check if point is within triangle
                 if 0 <= a and 0 <= b and 0 <= c and (a + b + c) <= 1:
-                    print("yes, pixel is inside mesh", color_map[v0], " ", color_map[v1], " ", color_map[v2])
                     # color the pixel depending on the lerp between the three pixels
                     pixelColor = a * color_map[v0] + b * color_map[v1] + c * color_map[v2]
-                    print("pixelColor= ", pixelColor, " size=", len(pixelColor), " shape pixel_Colors: ", pixel_colors.shape, x - sqxStart, y - sqyStart)
+                    #print("pixelColor= ", pixelColor)
                     x_i = x - sqxStart
                     y_i = y - sqyStart
 
@@ -116,9 +111,8 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
                     pixelPositionColor = (a * vertices[v0] + b * vertices[v1] + c * vertices[v2])
                     position_map[x_i, y_i] = pixelPositionColor
                     # TODO store as png with numpy, imageIo
-                    im = Image.fromarray(position_map)
-                    print(im)
-                    im.save("./VertexColorToTexture/texture/texture_map-face{}.png".format(i))
+    im = Image.fromarray(position_map)
+    im.save("./VertexColorToTexture/texture/texture_map.png")
 
 
 def get_uv_coordinates(filepath, number_of_vertices):

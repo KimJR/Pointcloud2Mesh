@@ -292,8 +292,8 @@ class GUI:
         self.widget.scene.clear_geometry()
 
         if not self.actual_geometry.is_empty():
-            mat = rendering.MaterialRecord()
-            mat.shader = "defaultUnlit"
+            mat = rendering.Material()
+            #mat.shader = "defaultUnlit"
             self.widget.scene.add_geometry("__model__", self.actual_geometry, mat)
             bounds = self.actual_geometry.get_axis_aligned_bounding_box()
             self.widget.setup_camera(60, bounds, bounds.get_center())
@@ -304,8 +304,8 @@ class GUI:
         self.actual_geometry = o3d.io.read_triangle_mesh(path)
 
         if not self.actual_geometry.is_empty():
-            mat = rendering.MaterialRecord()
-            mat.shader = "unlitLine"
+            mat = rendering.Material() #Record()
+            #mat.shader = "unlitLine"
             self.widget.scene.add_geometry("__model__", self.actual_geometry, mat)
             bounds = self.actual_geometry.get_axis_aligned_bounding_box()
             self.widget.setup_camera(60, bounds, bounds.get_center())
@@ -333,7 +333,7 @@ class GUI:
 
     def _on_calculate_uvmap(self):
         # run xatlas
-        # run_xatlas(self, self.settings.output_file)
+        run_xatlas(self, self.settings.output_file)
         # output_file is the file where the output from mesh generation was stored
         get_texture_from_vertex_color(self.settings.output_file)
 

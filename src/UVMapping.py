@@ -17,5 +17,7 @@ def run_xatlas(self, input_file):
     mesh = trimesh.load_mesh(str(input_file)+".ply")
 
     vmapping, indices, uvs = xatlas.parametrize(mesh.vertices, mesh.faces)
+    print(mesh.colors)
 
     xatlas.export(str(input_file)+".obj", mesh.vertices[vmapping], indices, uvs)
+    print(uvs)
