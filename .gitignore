@@ -4,6 +4,9 @@
 # ignore .idea
 .idea/*
 
+# texture images:
+*.png
+
 # Default ignored files
 /shelf/
 /workspace.xml
@@ -12,3 +15,6 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+
+# output files from build extensions
+*.o
