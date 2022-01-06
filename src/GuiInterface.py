@@ -293,7 +293,7 @@ class GUI:
 
         if not self.actual_geometry.is_empty():
             mat = rendering.Material()
-            #mat.shader = "defaultUnlit"
+            mat.shader = "defaultUnlit"
             self.widget.scene.add_geometry("__model__", self.actual_geometry, mat)
             bounds = self.actual_geometry.get_axis_aligned_bounding_box()
             self.widget.setup_camera(60, bounds, bounds.get_center())
@@ -305,7 +305,7 @@ class GUI:
 
         if not self.actual_geometry.is_empty():
             mat = rendering.Material() #Record()
-            #mat.shader = "unlitLine"
+            mat.shader = "unlitLine"
             self.widget.scene.add_geometry("__model__", self.actual_geometry, mat)
             bounds = self.actual_geometry.get_axis_aligned_bounding_box()
             self.widget.setup_camera(60, bounds, bounds.get_center())
