@@ -1,16 +1,17 @@
 import os.path
 
+import numba
+from numba import jit
 import numpy as np
 import vectormath
 import pymesh
 from numba import njit, prange
 from PIL import Image
 
-
 def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
     '''
     Generate the texture from colors of vertices.
-    :param input_file: the name of the input file, must not be None or empty.
+    :param input_file: the name of the input file, must not be None or empty. Should not include the file type '.obj'
            The object file includes an array of all faces (triangles). Each triangle includes an array of 3 vertices
     :return: the texture
     '''
@@ -18,11 +19,8 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
     # vmapping, indices, uvs = xatlas.parametrize(mesh.vertices, mesh.faces)
     # xatlas.export(str(input_file)+".obj", mesh.vertices[vmapping], indices, uvs)
 
-    filename, filetype = os.path.splitext(input_file)
-    if not filetype.lower() == ".obj":
-        print(".obj-File was expected for texture generation")
-        return
-    mesh = pymesh.load_mesh(input_file)
+    filename = input_file + ".obj"
+    mesh = pymesh.load_mesh(filename)
     mesh, info = pymesh.remove_isolated_vertices(mesh)  # remove vertices that are not part of any face or voxel
     vertices = mesh.vertices
     number_of_vertices = len(vertices)
@@ -42,8 +40,17 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
     normal_map = mesh.get_vertex_attribute("vertex_normal")  # contains normal vertices
 
     ### UV COORDINATES (of Vertices)
-    uv_coordinates = get_uv_coordinates(input_file, number_of_vertices)
+    uv_coordinates = get_uv_coordinates(filename, number_of_vertices)
+    #print(numba.typeof(vertices), numba.typeof(mesh.faces), numba.typeof(textureWidth), numba.typeof(uv_coordinates), numba.typeof(color_map), numba.typeof(normal_map))
+    position_map = create_texture(vertices, mesh.faces, textureWidth, uv_coordinates, color_map, normal_map)
+    # TODO store as png with numpy, imageIo
+    im = Image.fromarray(position_map)
+    im.save("./VertexColorToTexture/texture/texture_map.png")
 
+
+#@jit("array(array(float64, 2d, C), array(int32, 2d, C), int64, array(float64, 2d, C), array(int64, 2d, C), array(float64, 2d, C))")
+#@jit(nopython=True, cache=True, parallel=True)
+def create_texture(vertices, faces, textureWidth, uv_coordinates, color_map, normal_map):
     ### INIT storing arrays
     textureShape = (textureWidth, textureWidth, 3)
     pixel_colors = np.zeros(textureShape, dtype=np.uint8)         # the texture to which the color will be mapped
@@ -51,7 +58,6 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
     position_map = np.zeros(textureShape, dtype=np.uint8)         # the texture to which the position of the vertices will be mapped
 
     # process faces
-    faces = mesh.faces
     for i in range(0, len(faces)):
         face = faces[i]
         # get indices of vertices 0, 1 and 2 which are defining the face
@@ -104,21 +110,19 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
                     pixel_colors[x_i, y_i] = pixelColor
                     #  TODO write in hdr,
                     pixelNormalColor = (a * normal_map[v0] + b * normal_map[v1] + c * normal_map[v2]) / 2 + vectormath.Vector3(0.5,
-                                                                                                                0.5,
-                                                                                                                0.5)
+                                                                                                                               0.5,
+                                                                                                                               0.5)
                     normal_pixel_colors[x_i, y_i] = pixelNormalColor
 
                     pixelPositionColor = (a * vertices[v0] + b * vertices[v1] + c * vertices[v2])
                     position_map[x_i, y_i] = pixelPositionColor
-                    # TODO store as png with numpy, imageIo
-    im = Image.fromarray(position_map)
-    im.save("./VertexColorToTexture/texture/texture_map.png")
+    return position_map
 
 
 def get_uv_coordinates(filepath, number_of_vertices):
     '''
     Parse the provided obj. file at location filepath to derive the uv coordinates.
-    :param filepath: the path where the obj file to be parsed is stored
+    :param filepath: the path where the obj file to be parsed is stored, including the filename and type '.obj'
     :param number_of_vertices: the number of vertices specified in the file and therefore
            the number of u,v pairs to be returned
     :return: a matrix of [shape number_of_vertices, 2] or [number_of_vertices, 3]
@@ -167,4 +171,4 @@ def get_uv_coordinates(filepath, number_of_vertices):
 
 
 if __name__ == "__main__":
-    get_texture_from_vertex_color(os.getcwd() + "/models/mesh.obj")
+    get_texture_from_vertex_color(os.getcwd() + "/models/mesh")

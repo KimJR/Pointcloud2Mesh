@@ -13,11 +13,10 @@ def run_xatlas(self, input_file):
     # f <integer A_V> / <integer A_VT> <integer B_V> / ...
     # Beschreibung einer Fläche. (Möglichkeit 2 – anhand von Eckpunkten und Texturkoordinaten)
     # f 2 / 1 3 / 1 4 / 1
-
+    print("running xatlas")
     mesh = trimesh.load_mesh(str(input_file)+".ply")
 
     vmapping, indices, uvs = xatlas.parametrize(mesh.vertices, mesh.faces)
-    print(mesh.colors)
 
     xatlas.export(str(input_file)+".obj", mesh.vertices[vmapping], indices, uvs)
     print(uvs)
