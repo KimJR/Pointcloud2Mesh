@@ -15,6 +15,9 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+/venv
+
+*/__pycache__/*
 
 # output files from build extensions
 *.o
