@@ -1,4 +1,5 @@
 import trimesh
+from trimesh import visual
 
 uv_input_file = str("C:\\Users\\Alexander\\Documents\\GitHub\\Pointcloud2Mesh\\models\\color_to_uv_index_testfiles\\meshAfterXatlas")
 color_input_file = str("C:\\Users\\Alexander\\Documents\\GitHub\\Pointcloud2Mesh\\models\\color_to_uv_index_testfiles\\meshAfterPoisson")
@@ -9,14 +10,13 @@ def get_distance(first_vertex: list, second_vertex: list):
 
 def get_colors_for_uv_index(color_input_file: str, uv_input_file: str):
 
-    color_mesh = trimesh.load_mesh(color_input_file + ".ply") #file after poisson reconstruction, but before Xatlas
-    uv_mesh = trimesh.load_mesh(uv_input_file + ".obj") #file after Xatlas
+    color_mesh = trimesh.load(color_input_file + ".ply") #file after poisson reconstruction, but before Xatlas
+    uv_mesh = trimesh.load(uv_input_file + ".obj") #file after Xatlas
 
     color_vertices = color_mesh.vertices
     uv_vertices = uv_mesh.vertices
 
-    color_v = trimesh.visual.color.ColorVisuals(color_mesh)
-    colors = color_v.vertex_colors
+    colors = color_mesh.visual.vertex_colors
 
     uv_adjusted_colors = [0] * len(uv_vertices) #the array that will be filled with color values for each uv value
     combined_color_vertices = [0] * len(color_vertices)
@@ -46,7 +46,7 @@ def get_colors_for_uv_index(color_input_file: str, uv_input_file: str):
 
         #Search for matching vertex position between the current .obj-vertex (uv) and another .ply-vertex (color)
         while match_found == 0 and n<50:
-            max_limit_counter = min(c+n, len(color_sorted_vertices)-1)
+            max_limit_counter = max(0,min(c+n, len(color_sorted_vertices)-1))
             if get_distance(uv_sorted_vertices[i], color_sorted_vertices[max_limit_counter]) < 0.001:
                 uv_adjusted_colors[uv_sorted_vertices[i][3]] = [color_sorted_vertices[max_limit_counter][3], color_sorted_vertices[max_limit_counter][4], color_sorted_vertices[max_limit_counter][5], 255]
                 c = max_limit_counter
