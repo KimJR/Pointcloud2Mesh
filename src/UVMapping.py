@@ -15,8 +15,8 @@ def run_xatlas(self, input_file):
     # f 2 / 1 3 / 1 4 / 1
     print("running xatlas")
     mesh = trimesh.load_mesh(str(input_file)+".ply")
-
+    print(mesh)
     vmapping, indices, uvs = xatlas.parametrize(mesh.vertices, mesh.faces)
-
+    print(vmapping)
     xatlas.export(str(input_file)+".obj", mesh.vertices[vmapping], indices, uvs)
     print(uvs)

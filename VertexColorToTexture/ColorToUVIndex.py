@@ -1,11 +1,25 @@
 import trimesh
 from trimesh import visual
+import os
+import numpy as np
 
-uv_input_file = str("C:\\Users\\Alexander\\Documents\\GitHub\\Pointcloud2Mesh\\models\\color_to_uv_index_testfiles\\meshAfterXatlas")
-color_input_file = str("C:\\Users\\Alexander\\Documents\\GitHub\\Pointcloud2Mesh\\models\\color_to_uv_index_testfiles\\meshAfterPoisson")
+
+uv_input_file = str(os.getcwd() + "/models/color_to_uv_index_testfiles/meshAfterXatlas")
+color_input_file = str(os.getcwd() + "/models/color_to_uv_index_testfiles/meshAfterPoisson")
 
 def get_distance(first_vertex: list, second_vertex: list):
-    distance = abs(float(first_vertex[0]) - float(second_vertex[0])) + abs(float(first_vertex[1]) - float(second_vertex[1])) + abs(float(first_vertex[2]) - float(second_vertex[2]))
+    '''
+    Helper function that computes the euclidean distances of vertices from given first_vertex to the given second_vertex
+    both parameter are required to be of length 3 or higher. All values at positions higher than 3 will be ignored.
+    :param first_vertex: list of three numeric values specifying the according x,y and z coordinates of the vertex
+    :param second_vertex: list of three numeric values specifying the according x,y and z coordinates of the vertex
+    :return: the euclidean distance between the two given vertices
+    '''
+    distance = None
+    if len(first_vertex) == 3 and len(second_vertex) == 3:
+        distance = abs(float(first_vertex[0]) - float(second_vertex[0])) + abs(float(first_vertex[1]) - float(second_vertex[1])) + abs(float(first_vertex[2]) - float(second_vertex[2]))
+    else:
+        print(str(len(first_vertex)) + " and " + str(len(second_vertex)))
     return distance
 
 def get_colors_for_uv_index(color_input_file: str, uv_input_file: str):
@@ -47,13 +61,13 @@ def get_colors_for_uv_index(color_input_file: str, uv_input_file: str):
         #Search for matching vertex position between the current .obj-vertex (uv) and another .ply-vertex (color)
         while match_found == 0 and n<50:
             max_limit_counter = max(0,min(c+n, len(color_sorted_vertices)-1))
-            if get_distance(uv_sorted_vertices[i], color_sorted_vertices[max_limit_counter]) < 0.001:
+            current_vertex_distance = get_distance(uv_sorted_vertices[i][:3], color_sorted_vertices[max_limit_counter][:3])
+            if current_vertex_distance < 0.001:
                 uv_adjusted_colors[uv_sorted_vertices[i][3]] = [color_sorted_vertices[max_limit_counter][3], color_sorted_vertices[max_limit_counter][4], color_sorted_vertices[max_limit_counter][5], 255]
                 c = max_limit_counter
                 match_found = 1
             else:
                 #In case no match is found before the max search distance is reached, the .obj vertex will be matched with the closest .ply vertex within the search distance. May lead to artifacts.
-                current_vertex_distance = get_distance(uv_sorted_vertices[i], color_sorted_vertices[max_limit_counter])
                 if current_vertex_distance < minimal_distance[1]:
                     minimal_distance = [max_limit_counter, current_vertex_distance]
                 #Loop through the search distance starting from the most likely point to find a match, then going outwards in both positive and negative direction
@@ -73,5 +87,8 @@ def get_colors_for_uv_index(color_input_file: str, uv_input_file: str):
 
 indexed_colors = get_colors_for_uv_index(color_input_file, uv_input_file)
 
+f = open("color_UV", "w")
 for i in range(0, 90000, 1000):
-    print(str(i) + ") " + " " + str(indexed_colors[i]))
+    print(str(i) + ": " + str(indexed_colors[i]))
+    f.write(str(i) + ": " + str(indexed_colors[i]) + " \n")
+f.close()

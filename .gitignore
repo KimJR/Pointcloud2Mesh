@@ -6,6 +6,8 @@
 
 # texture images:
 *.png
+*.obj
+*.ply
 
 # Default ignored files
 /shelf/

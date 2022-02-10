@@ -1,11 +1,13 @@
 import os.path
-import numba
 from numba import jit, njit, prange
 import numpy as np
 import vectormath
 import trimesh
 import xatlas
 from PIL import Image
+
+
+import ColorToUVIndex
 
 
 def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
@@ -18,13 +20,14 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
 
     mesh = trimesh.load_mesh(input_file + ".ply")
     vmapping, indices, uvs = xatlas.parametrize(mesh.vertices, mesh.faces)
+    indexed_colors = ColorToUVIndex.get_colors_for_uv_index(input_file, input_file)
     vertices = mesh.vertices
     number_of_vertices = len(vertices)
 
     # accessing vertex and face information:
     ### COLOR
-    cv = trimesh.visual.color.ColorVisuals(mesh)
-    color_map = cv.vertex_colors  # contains the color per vertex
+    cv = trimesh.visual.color.ColorVisuals(mesh, indexed_colors)
+    color_map = cv.indexed_colors  # contains the color per vertex
 
     ### NORMAL
     normal_map = mesh.vertex_normals  # contains normal vertices
@@ -162,4 +165,4 @@ def get_uv_coordinates(filepath, number_of_vertices):
 
 
 if __name__ == "__main__":
-    get_texture_from_vertex_color(os.getcwd() + "/models/mesh")
+    get_texture_from_vertex_color(os.getcwd() + "/models/mesh", 1024)
