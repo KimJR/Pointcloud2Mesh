@@ -17,7 +17,6 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
            The object file includes an array of all faces (triangles). Each triangle includes an array of 3 vertices
     :return: the texture
     '''
-
     mesh = trimesh.load(input_file + ".ply")
     print("starting xatlas unwrap!")
     vmapping, indices, uvs = xatlas.parametrize(mesh.vertices, mesh.faces)
@@ -28,10 +27,19 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
     vertex_colors = mesh.visual.vertex_colors[vmapping]     # get the color per vertex after xatlas conversion
     vertex_normals = mesh.vertex_normals[vmapping]          # contains normal vertices after xatlas conversion
 
+    # compute the maximum range of vertices for each dimension of the texture box
+    min_positions = np.argmin(vertices, axis=0)  # find the minimum for each column
+    max_positions = np.argmax(vertices, axis=0)  # find the maximum for each column
+
+    # calculate the ranges per axis
+    x_range = vertices[max_positions[0], 0] - vertices[min_positions[0], 0]
+    y_range = vertices[max_positions[1], 1] - vertices[min_positions[1], 1]
+    z_range = vertices[max_positions[2], 2] - vertices[min_positions[2], 2]
+    ranges = [x_range, y_range, z_range]
+    color_range = ranges[np.argmax(ranges)]  # np.argmax returns position of max value --> in ranges to get value
 
     # UV COORDINATES (of Vertices)
-    print("create texture...")
-    pixel_position_array = create_texture(vertices, indices, textureWidth, uvs, vertex_colors, vertex_normals)
+    pixel_position_array = create_texture(vertices, indices, textureWidth, uvs, vertex_colors, vertex_normals, color_range)
 
     cv = trimesh.visual.color.ColorVisuals(mesh, None, pixel_position_array)
     im = Image.fromarray(pixel_position_array)
@@ -39,14 +47,14 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
 
 
 @jit(nopython=True, cache=True, parallel=True)
-def create_texture(vertices, faces, textureWidth, uv_coordinates, new_colors, new_normals):
+def create_texture(vertices, faces, textureWidth, uv_coordinates, colors, normals, color_range):
     ### INIT storing arrays
     textureShape = (textureWidth, textureWidth, 3)
     pixel_color_array = np.zeros(textureShape, dtype=np.uint8)  # the texture to which the color will be mapped
     pixel_normal_array = np.zeros(textureShape, dtype=np.uint8)  # the texture to which the normal color will be mapped
     pixel_position_array = np.zeros(textureShape, dtype=np.uint8)  # the texture to which the position of the vertices will be mapped
 
-    position_color_range = 100 # TODO this should be 255 divided by the highest length of the mesh's bounding box. 
+    position_color_range = 255/color_range
 
     # process faces
     for i in range(0, len(faces)):
@@ -56,7 +64,7 @@ def create_texture(vertices, faces, textureWidth, uv_coordinates, new_colors, ne
         v1 = face[1]
         v2 = face[2]
 
-        x1 = uv_coordinates[v0, 0]  # possibly several u values --> TODO how would this look like then?
+        x1 = uv_coordinates[v0, 0]
         y1 = uv_coordinates[v0, 1]
         x2 = uv_coordinates[v1, 0]
         y2 = uv_coordinates[v1, 1]
@@ -73,8 +81,6 @@ def create_texture(vertices, faces, textureWidth, uv_coordinates, new_colors, ne
         # cycle through each pixel within the square to see if the pixel is within the triangle
         for y in range(sqyStart, sqyEnd):
             for x in range(sqxStart, sqxEnd):
-                #print("POINT: ", x, " ", y)
-
                 xNorm = x / textureWidth  # x normalized to value between 0 and 1 (easier to calculate)
                 yNorm = y / textureWidth  # y normalized to value between 0 and 1 (easier to calculate)
 
@@ -92,19 +98,19 @@ def create_texture(vertices, faces, textureWidth, uv_coordinates, new_colors, ne
                 if 0 <= a and 0 <= b and 0 <= c and (a + b + c) <= 1:
                     # color the pixel depending on the lerp between the three pixels
                     # new_colors might has shape of (lenOfVertices, 4) if it stores RGBA values --> only use RGB
-                    pixel_color = a * new_colors[v0, :3] + b * new_colors[v1, :3] + c * new_colors[v2, :3]
+                    pixel_color = a * colors[v0, :3] + b * colors[v1, :3] + c * colors[v2, :3]
                     # print("pixel_color= ", pixel_color)
                     x_i = x - sqxStart
                     y_i = y - sqyStart
                     pixel_color_array[x_i, y_i] = pixel_color
                     #  TODO write in hdr,
-                    pColor = (a * new_normals[v0] + b * new_normals[v1] + c * new_normals[v2])/2
+                    pColor = (a * normals[v0] + b * normals[v1] + c * normals[v2]) / 2
                     pixel_normal_color = [255*(pColor[0] + 0.5), 255*(pColor[1] + 0.5), 255*(pColor[2] + 0.5)]
                     pixel_normal_array[x_i, y_i] = pixel_normal_color
 
                     pixel_position_color = position_color_range * a * vertices[v0] + position_color_range *b * vertices[v1] + position_color_range * (c * vertices[v2])
                     pixel_position_array[x_i, y_i] = pixel_position_color
-        print(str(i) + " from " + str(len(faces)))
+        #print(str(i) + " from " + str(len(faces)))
     return pixel_position_array
 
 
