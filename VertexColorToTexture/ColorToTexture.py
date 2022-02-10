@@ -7,7 +7,7 @@ import xatlas
 from PIL import Image
 
 
-import ColorToUVIndex
+import VertexColorToTexture.ColorToUVIndex as ColorToUVIndex
 
 
 def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):

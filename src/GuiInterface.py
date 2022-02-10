@@ -293,7 +293,7 @@ class GUI:
         self.widget.scene.clear_geometry()
 
         if not self.actual_geometry.is_empty():
-            mat = rendering.MaterialRecord()
+            mat = rendering.Material()
             mat.shader = "defaultUnlit"
             self.widget.scene.add_geometry("__model__", self.actual_geometry, mat)
             bounds = self.actual_geometry.get_axis_aligned_bounding_box()
@@ -305,7 +305,7 @@ class GUI:
         self.actual_geometry = o3d.io.read_triangle_mesh(path)
 
         if not self.actual_geometry.is_empty():
-            mat = rendering.MaterialRecord()
+            mat = rendering.Material()
             mat.shader = "unlitLine"
             self.widget.scene.add_geometry("__model__", self.actual_geometry, mat)
             bounds = self.actual_geometry.get_axis_aligned_bounding_box()
