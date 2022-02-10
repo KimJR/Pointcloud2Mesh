@@ -89,6 +89,6 @@ indexed_colors = get_colors_for_uv_index(color_input_file, uv_input_file)
 
 f = open("color_UV", "w")
 for i in range(0, 90000, 1000):
-    print(str(i) + ": " + str(indexed_colors[i]))
+    # print(str(i) + ": " + str(indexed_colors[i]))
     f.write(str(i) + ": " + str(indexed_colors[i]) + " \n")
 f.close()
