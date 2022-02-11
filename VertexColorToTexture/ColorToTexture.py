@@ -9,15 +9,16 @@ from trimesh import base
 import xatlas
 from PIL import Image
 
+import ColorToUVIndex # VertexColorToTexture.ColorToUVIndex as
 
-def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
+
+def get_texture_from_vertex_color(input_file: str, texture_width: int = 1024):
     '''
     Generate the texture from colors of vertices.
     :param input_file: the name of the input file, must not be None or empty. Should not include the file type '.obj'
            The object file includes an array of all faces (triangles). Each triangle includes an array of 3 vertices
     :return: the texture
     '''
-
     mesh = trimesh.load(input_file + ".ply")
     print("starting xatlas unwrap!")
     vmapping, indices, uvs = xatlas.parametrize(mesh.vertices, mesh.faces)
@@ -37,17 +38,18 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
         new_normals[i] = vertex_normals[vmapping[i]]
 
     ### UV COORDINATES (of Vertices)
-    pixel_color_array = create_texture(new_vertices, indices, textureWidth, uvs, new_colors, new_normals)
+    create_texture(new_vertices, indices, texture_width, uvs, new_colors, new_normals)
 
 #@jit(nopython=True, cache=True, parallel=True)
-def create_texture(new_vertices, faces, textureWidth, uv_coordinates, new_colors, new_normals):
+def create_texture(new_vertices, faces, texture_width, uv_coordinates, new_colors, new_normals):
     ### INIT storing arrays
-    textureShape = (textureWidth, textureWidth, 3)
-    pixel_color_array = np.zeros(textureShape, dtype=np.uint8)  # the texture to which the color will be mapped
-    pixel_normal_array = np.zeros(textureShape, dtype=np.uint8)  # the texture to which the normal color will be mapped
-    pixel_position_array = np.zeros(textureShape, dtype=np.uint8)  # the texture to which the position of the vertices will be mapped
+    texture_shape = (texture_width, texture_width, 3)
+    pixel_color_array = np.zeros(texture_shape, dtype=np.uint8)  # the texture to which the color will be mapped
+    pixel_normal_array = np.zeros(texture_shape, dtype=np.uint8)  # the texture to which the normal color will be mapped
+    pixel_position_array = np.zeros(texture_shape, dtype=np.uint8)  # the texture to which the position of the vertices will be mapped
 
-    position_color_range = 100 # TODO this should be 255 divided by the highest length of the mesh's bounding box. 
+    color_range = 5 #TODO calculate color range from bounding box
+    position_color_range = 255/color_range
 
     # process faces
     for i in range(0, len(faces)):
@@ -57,7 +59,7 @@ def create_texture(new_vertices, faces, textureWidth, uv_coordinates, new_colors
         v1 = face[1]
         v2 = face[2]
 
-        x1 = uv_coordinates[v0, 0]  # possibly several u values --> TODO how would this look like then?
+        x1 = uv_coordinates[v0, 0]
         y1 = uv_coordinates[v0, 1]
         x2 = uv_coordinates[v1, 0]
         y2 = uv_coordinates[v1, 1]
@@ -65,19 +67,17 @@ def create_texture(new_vertices, faces, textureWidth, uv_coordinates, new_colors
         y3 = uv_coordinates[v2, 1]
 
         # get smallest square of pixels that includes all three vertex positions
-        sqxStart = int(min(x1, x2, x3) * textureWidth)
-        sqxEnd = int(max(x1, x2, x3) * textureWidth)
-        sqyStart = int(min(y1, y2, y3) * textureWidth)
-        sqyEnd = int(max(y1, y2, y3) * textureWidth)
+        sqxStart = int(min(x1, x2, x3) * texture_width)
+        sqxEnd = int(max(x1, x2, x3) * texture_width)
+        sqyStart = int(min(y1, y2, y3) * texture_width)
+        sqyEnd = int(max(y1, y2, y3) * texture_width)
 
         # TODO  parallelize: buffer texture -> join those
         # cycle through each pixel within the square to see if the pixel is within the triangle
         for y in range(sqyStart, sqyEnd):
             for x in range(sqxStart, sqxEnd):
-                #print("POINT: ", x, " ", y)
-
-                xNorm = x / textureWidth  # x normalized to value between 0 and 1 (easier to calculate)
-                yNorm = y / textureWidth  # y normalized to value between 0 and 1 (easier to calculate)
+                xNorm = x / texture_width  # x normalized to value between 0 and 1 (easier to calculate)
+                yNorm = y / texture_width  # y normalized to value between 0 and 1 (easier to calculate)
 
                 # get factors a, b, c such that
                 # x = a * x1 + b * x2  + c * x3 --> x - c*x3 - b*x2 = a*x1 --> (x - c*x3 - b*x2)/x1 = a
@@ -103,7 +103,7 @@ def create_texture(new_vertices, faces, textureWidth, uv_coordinates, new_colors
                     #  TODO write in hdr,
                     normal_color = (a * new_normals[v0] + b * new_normals[v1] + c * new_normals[v2])/2
                     pixel_normal_color = [int(255*(normal_color[0] + 0.5)), int(255*(normal_color[1] + 0.5)), int(255*(normal_color[2] + 0.5))]
-                    pixel_normal_array[x_i, y_i] = pixel_normal_color
+                    pixel_normal_array[x, y] = pixel_normal_color
 
                     pixel_position_color = position_color_range * a * new_vertices[v0] + position_color_range * b * new_vertices[v1] + position_color_range * c * new_vertices[v2]
                     pixel_position_array[x, y] = pixel_position_color
@@ -118,9 +118,9 @@ def create_texture(new_vertices, faces, textureWidth, uv_coordinates, new_colors
     im_p = Image.fromarray(pixel_position_array)
     im_p.save(os.getcwd() + "\\VertexColorToTexture\\texture\\position_map.png")
     
-    return pixel_color_array
+    return
 
 #get_texture_from_vertex_color("C:\\Users\\Alexander\\Documents\\GitHub\\Pointcloud2Mesh\\models\\color_to_uv_index_testfiles\\meshAfterPoisson")
 
 if __name__ == "__main__":
-    get_texture_from_vertex_color(os.getcwd() + "/models/mesh")
+    get_texture_from_vertex_color(os.getcwd() + "/models/color_to_uv_index_testfiles/meshAfterPoisson", 1024)
