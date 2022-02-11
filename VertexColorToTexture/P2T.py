@@ -60,10 +60,14 @@ def create_texture(vertices, faces, textureWidth, uv_coordinates, colors, normal
     for i in range(0, len(faces)):
         face = faces[i]
         # get indices of vertices 0, 1 and 2 which are defining the face
-        # get indices of vertices 0, 1 and 2 which are defining the face
         iVertex0 = face[0]
         iVertex1 = face[1]
         iVertex2 = face[2]
+
+        x = vertices[iVertex0]
+        y = vertices[iVertex1]
+        z = vertices[iVertex2]
+        triangle_normal = np.cross(y - x, z - x)
 
         u1 = uv_coordinates[iVertex0, 0]
         v1 = uv_coordinates[iVertex0, 1]
@@ -84,6 +88,7 @@ def create_texture(vertices, faces, textureWidth, uv_coordinates, colors, normal
         sqr_start_v = int(min(v1, v2, v3) * textureWidth)
         sqr_end_v = int(max(v1, v2, v3) * textureWidth)
 
+
         # TODO  parallelize: buffer texture -> join those
         # cycle through each pixel within the square to see if the pixel is within the triangle
         for y in range(sqr_start_v, sqr_end_v):
@@ -92,15 +97,15 @@ def create_texture(vertices, faces, textureWidth, uv_coordinates, colors, normal
                 yNorm = y / textureWidth  # y normalized to value between 0 and 1 (easier to calculate)
 
                 # see https://ceng2.ktu.edu.tr/~cakir/files/grafikler/Texture_Mapping.pdf
-                a = (xNorm - u2)*v2v3 - u2u3*(yNorm - v2)  # compute area between pixel, v2 and v3
-                b = (xNorm - u3)*v3v1 - u3u1*(yNorm - v3)  # compute area between pixel, v3 and v1
+                a = (x - u2)*v2v3 - u2u3*(y - v2)  # compute area between pixel, v2 and v3
+                b = (x - u3)*v3v1 - u3u1*(y - v3)  # compute area between pixel, v3 and v1
                 c = 1 - a - b
 
                 #print(a, " ", b, " ", c)
                 # check if point is within triangle
                 if 0 <= a and 0 <= b and 0 <= c and (a + b + c) <= 1:
                     # color the pixel depending on the lerp between the three pixels
-                    # colors might have shape of (lenOfVertices, 4) if it stores RGBA values --> only use RGB
+                    # new_colors might has shape of (lenOfVertices, 4) if it stores RGBA values --> only use RGB
                     pixel_color = a * colors[iVertex0, :3] + b * colors[iVertex1, :3] + c * colors[iVertex2, :3]
 
                     pixel_color_array[x, y] = pixel_color
@@ -111,6 +116,7 @@ def create_texture(vertices, faces, textureWidth, uv_coordinates, colors, normal
 
                     pixel_position_color = position_color_range * a * vertices[iVertex0] + position_color_range *b * vertices[iVertex1] + position_color_range * (c * vertices[iVertex2])
                     pixel_position_array[x, y] = pixel_normal_color
+        #print(str(i) + " from " + str(len(faces)))
     return pixel_color_array
 
 
