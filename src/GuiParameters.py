@@ -114,7 +114,7 @@ class Parameters:
         self.samplesPerNode.tooltip = "Specifies the minimum number of sample points that should fall within an octree node as the octree construction is adapted to sampling density.\nnoise-free samples: [1.0 - 5.0], noisy samples: [15.0 - 20.0]"
         self.samplesPerNode.set_on_checked(self.on_samplesPerNode)
         self.samplesPerNode_value = gui.NumberEdit(gui.NumberEdit.DOUBLE)
-        self.degree_value.set_limits(1.0, 20.0)
+        self.samplesPerNode_value.set_limits(1.0, 20.0)
         self.samplesPerNode_value.set_value(1.0)
 
         # 12 --iters <GS iters>
