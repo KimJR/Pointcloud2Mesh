@@ -189,7 +189,7 @@ class GUI:
         self._fileedit.text_value = path
         self.settings.input_file = path
         self.check_loaded_file(path)
-        self.plot_pointcloud()
+        self.plot_result(shader="defaultUnlit")
         self.load(path)
 
     def load(self, path):
@@ -289,28 +289,23 @@ class GUI:
 
         self.apply_settings()
 
-    def plot_pointcloud(self):
+    def plot_result(self, path=None, shader="defaultUnlit"):
         self.widget.scene.clear_geometry()
+        if path is not None:
+            # path should be set if mesh or texture shall be shown
+            if path.endswith(".png"):
+                # plot the texture
+                self.actual_geometry = o3d.io.read_image(path)
+            else:
+                #plot the mesh
+                self.actual_geometry = o3d.io.read_triangle_mesh(path)
 
         if not self.actual_geometry.is_empty():
             mat = rendering.Material()
-            mat.shader = "defaultUnlit"
+            mat.shader = shader
             self.widget.scene.add_geometry("__model__", self.actual_geometry, mat)
             bounds = self.actual_geometry.get_axis_aligned_bounding_box()
             self.widget.setup_camera(60, bounds, bounds.get_center())
-
-    def plot_mesh(self):
-        self.widget.scene.clear_geometry()
-        path = self.settings.output_file+".ply"
-        self.actual_geometry = o3d.io.read_triangle_mesh(path)
-
-        if not self.actual_geometry.is_empty():
-            mat = rendering.Material()
-            mat.shader = "unlitLine"
-            self.widget.scene.add_geometry("__model__", self.actual_geometry, mat)
-            bounds = self.actual_geometry.get_axis_aligned_bounding_box()
-            self.widget.setup_camera(60, bounds, bounds.get_center())
-
 
     def on_calculate_mesh(self):
         # enable uvmap button
@@ -327,16 +322,17 @@ class GUI:
         run_poisson_reconstruction(self, self.settings.input_file, self.settings.output_file)
 
         # plot new generated mesh
-        self.plot_mesh()
+        self.plot_result(self.settings.output_file+".ply", "unlitLine")
 
         # apply settings
         self.apply_settings()
 
     def _on_calculate_uvmap(self):
-        # run xatlas
-        # run_xatlas(self, self.settings.output_file)
         # output_file is the file where the output from mesh generation was stored
-        get_texture_from_vertex_color(self.settings.output_file)
+        texture = get_texture_from_vertex_color(self.settings.output_file)
+
+        # plot new generated mesh
+        self.plot_result(self.settings.output_file+".png", "defaultUnlit")
 
         # apply settings
         self.apply_settings()

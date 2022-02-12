@@ -1,13 +1,10 @@
 import os.path
 from numba import jit, njit, prange
 import numpy as np
-import vectormath
 import trimesh
 from trimesh import visual
 import xatlas
 from PIL import Image
-
-import ColorToUVIndex # VertexColorToTexture.ColorToUVIndex as
 
 
 def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
@@ -43,7 +40,8 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
 
     cv = trimesh.visual.color.ColorVisuals(mesh, None, pixel_position_array)
     im = Image.fromarray(pixel_position_array)
-    im.save("./VertexColorToTexture/texture/texture_map.png")
+    im.save(input_file + ".png")
+    return pixel_position_array
 
 
 @jit(nopython=True, cache=True, parallel=True)
@@ -57,9 +55,8 @@ def create_texture(vertices, faces, textureWidth, uv_coordinates, colors, normal
     position_color_range = 255/color_range
 
     # process faces
-    for i in range(0, len(faces)):
+    for i in prange(0, len(faces)):
         face = faces[i]
-        # get indices of vertices 0, 1 and 2 which are defining the face
         # get indices of vertices 0, 1 and 2 which are defining the face
         iVertex0 = face[0]
         iVertex1 = face[1]
@@ -84,10 +81,9 @@ def create_texture(vertices, faces, textureWidth, uv_coordinates, colors, normal
         sqr_start_v = int(min(v1, v2, v3) * textureWidth)
         sqr_end_v = int(max(v1, v2, v3) * textureWidth)
 
-        # TODO  parallelize: buffer texture -> join those
         # cycle through each pixel within the square to see if the pixel is within the triangle
-        for y in range(sqr_start_v, sqr_end_v):
-            for x in range(sqr_start_u, sqr_end_u):
+        for y in prange(sqr_start_v, sqr_end_v):
+            for x in prange(sqr_start_u, sqr_end_u):
                 xNorm = x / textureWidth  # x normalized to value between 0 and 1 (easier to calculate)
                 yNorm = y / textureWidth  # y normalized to value between 0 and 1 (easier to calculate)
 
