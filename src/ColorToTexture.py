@@ -7,10 +7,10 @@ from trimesh import visual
 import xatlas
 from PIL import Image
 
-import ColorToUVIndex # VertexColorToTexture.ColorToUVIndex as
+#import ColorToUVIndex
 
 
-def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
+def get_texture_from_vertex_color(input_file: str, image_name:str, textureWidth: int = 1024):
     '''
     Generate the texture from colors of vertices.
     :param input_file: the name of the input file, must not be None or empty. Should not include the file type '.obj'
@@ -42,8 +42,15 @@ def get_texture_from_vertex_color(input_file: str, textureWidth: int = 1024):
     pixel_position_array = create_texture(vertices, indices, textureWidth, uvs, vertex_colors, vertex_normals, color_range)
 
     cv = trimesh.visual.color.ColorVisuals(mesh, None, pixel_position_array)
+
+    # save texture map
     im = Image.fromarray(pixel_position_array)
-    im.save("./VertexColorToTexture/texture/texture_map.png")
+    im.save(str(image_name)+'_texture_map.png')
+
+    # save normal map
+    #im_n = Image.fromarray(pixel_normal_array)
+    #im_n.save(str(image_name)+'_normal_map.png')
+
 
 
 @jit(nopython=True, cache=True, parallel=True)
@@ -112,7 +119,3 @@ def create_texture(vertices, faces, textureWidth, uv_coordinates, colors, normal
                     pixel_position_color = position_color_range * a * vertices[iVertex0] + position_color_range *b * vertices[iVertex1] + position_color_range * (c * vertices[iVertex2])
                     pixel_position_array[x, y] = pixel_normal_color
     return pixel_color_array
-
-
-if __name__ == "__main__":
-    get_texture_from_vertex_color(os.getcwd() + "/models/color_to_uv_index_testfiles/meshAfterPoisson", 1024)

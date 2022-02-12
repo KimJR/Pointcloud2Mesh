@@ -3,10 +3,7 @@ import open3d.visualization.gui as gui
 import open3d.visualization.rendering as rendering
 from src.GuiParameters import Parameters
 from src.PoissonReconstruction import run_poisson_reconstruction
-from src.UVMapping import run_xatlas
-#from VertexColorToTexture.VertexColorToTexture import get_texture_from_vertex_color
-from VertexColorToTexture.ColorToTexture import get_texture_from_vertex_color
-import numpy as np
+from src.ColorToTexture import get_texture_from_vertex_color
 
 
 class Settings:
@@ -19,6 +16,7 @@ class Settings:
         # Directories
         self.main_dir = main_dir
         self.model_dir = main_dir + "/models/"
+        self.out_dir = main_dir + "/out/"
 
         # Operation system
         self.my_os = my_os
@@ -38,7 +36,6 @@ class GUI:
         # create window
         self.window = gui.Application.instance.create_window("Poisson Surface Reconstruction", 1000, 700)
         w = self.window  # for more concise code
-
 
         # set the window's layout
         w.set_on_layout(self._on_layout)
@@ -123,6 +120,31 @@ class GUI:
         self._uvmap_button.set_on_clicked(self._on_calculate_uvmap)
         self.panel.add_child(self._uvmap_button)
 
+        # crate Textfield output name Image
+        self._image_label = gui.Label("Image name")
+        self.texture_name = gui.TextEdit()
+        self.texture_name.Constraints.width = 0.4
+        self.texture_name.text_value = "texture_map"
+        self.texture_name.placeholder_text = "texture_map"
+        # grid layout
+        grid = gui.VGrid(1, 0.25 * em)
+        h = gui.Horiz(0.25 * em)  # row 1
+        h.add_child(self._image_label)
+        h.add_child(self.texture_name)
+        h.add_stretch()
+        grid.add_child(h)
+        self.panel.add_child(grid)
+
+        # Create Label 3
+        self.panel.add_fixed(separation_height)
+        self._label = gui.Label("|3| Texture map")
+        self._label.text_color = gui.Color(1.0, 0.5, 0.0)
+        self.panel.add_child(self._label)
+
+        # create image
+        self._image_field = gui.ImageWidget(self.settings.model_dir+"dummy_texture.jpeg")
+        self.panel.add_child(self._image_field)
+
         # ---- add settings panel + widget to window ----
         w.add_child(self.widget)
         w.add_child(self.panel)
@@ -158,6 +180,8 @@ class GUI:
         self._mesh_button.enabled = self.mesh_button_enabled
         self._uvmap_button.enabled = self.uvmap_button_enabled
 
+
+
     def _on_layout(self, layout_context):
         contentRect = self.window.content_rect
         panel_width = 15 * layout_context.theme.font_size  # 15 ems wide
@@ -185,62 +209,11 @@ class GUI:
         self.window.close_dialog()
 
     def _on_filedlg_done(self, path):
-        self.window.close_dialog()  # first close file dialog window to indicate user that it was selected
         self._fileedit.text_value = path
         self.settings.input_file = path
+        self.window.close_dialog()
         self.check_loaded_file(path)
         self.plot_pointcloud()
-        self.load(path)
-
-    def load(self, path):
-        '''
-        Method is basically from: https://github.com/isl-org/Open3D/blob/master/examples/python/gui/vis-gui.py
-        '''
-        self.widget.scene.clear_geometry()
-
-        geometry = None
-        geometry_type = o3d.io.read_file_geometry_type(path)
-
-        mesh = None
-        if geometry_type & o3d.io.CONTAINS_TRIANGLES:
-            mesh = o3d.io.read_triangle_mesh(path)
-        if mesh is not None:
-            if len(mesh.triangles) == 0:
-                # Probably always the case for this project
-                print(
-                    "[INFO] Contains 0 triangles, will read as point cloud")
-                mesh = None
-            else:
-                mesh.compute_vertex_normals()
-                if len(mesh.vertex_colors) == 0:
-                    mesh.paint_uniform_color([1, 1, 1])
-                geometry = mesh
-            # Make sure the mesh has texture coordinates
-            if not mesh.has_triangle_uvs():
-                uv = np.array([[0.0, 0.0]] * (3 * len(mesh.triangles)))
-                mesh.triangle_uvs = o3d.utility.Vector2dVector(uv)
-        else:
-            print("[Info]", path, "seems to be a point cloud. :)")
-
-        if geometry is None:
-            cloud = o3d.io.read_point_cloud(path)
-            if cloud is not None:
-                print("[Info] Successfully read", path)
-                if not cloud.has_normals():
-                    cloud.estimate_normals()
-                cloud.normalize_normals()
-                geometry = cloud
-            else:
-                print("[WARNING] Failed to read points", path)
-
-        if geometry is not None:
-            try:
-                self.widget.scene.add_geometry("__model__", geometry,
-                                               self.settings.material)
-                bounds = geometry.get_axis_aligned_bounding_box()
-                self.widget.setup_camera(60, bounds, bounds.get_center())
-            except Exception as e:
-                print(e)
 
     '''
        Menü bar Quit
@@ -293,7 +266,7 @@ class GUI:
         self.widget.scene.clear_geometry()
 
         if not self.actual_geometry.is_empty():
-            mat = rendering.Material()
+            mat = rendering.MaterialRecord()
             mat.shader = "defaultUnlit"
             self.widget.scene.add_geometry("__model__", self.actual_geometry, mat)
             bounds = self.actual_geometry.get_axis_aligned_bounding_box()
@@ -303,9 +276,10 @@ class GUI:
         self.widget.scene.clear_geometry()
         path = self.settings.output_file+".ply"
         self.actual_geometry = o3d.io.read_triangle_mesh(path)
+        print("Generated "+str(self.actual_geometry))
 
         if not self.actual_geometry.is_empty():
-            mat = rendering.Material()
+            mat = rendering.MaterialRecord()
             mat.shader = "unlitLine"
             self.widget.scene.add_geometry("__model__", self.actual_geometry, mat)
             bounds = self.actual_geometry.get_axis_aligned_bounding_box()
@@ -316,12 +290,12 @@ class GUI:
         # enable uvmap button
         self.uvmap_button_enabled = True
 
-        #set outputfile
+        # set outputfile
         # check for empty field and set default
         if self.param.out_name.text_value != "":
-            self.settings.output_file = self.settings.model_dir+self.param.out_name.text_value
+            self.settings.output_file = self.settings.out_dir+self.param.out_name.text_value
         else:
-            self.settings.output_file = self.settings.model_dir+"mesh"
+            self.settings.output_file = self.settings.out_dir+"mesh"
 
         # run poisson reconstruction + xatlas
         run_poisson_reconstruction(self, self.settings.input_file, self.settings.output_file)
@@ -333,10 +307,13 @@ class GUI:
         self.apply_settings()
 
     def _on_calculate_uvmap(self):
+        image_name = str(self.settings.out_dir)+str(self.texture_name.text_value)
         # run xatlas
-        # run_xatlas(self, self.settings.output_file)
-        # output_file is the file where the output from mesh generation was stored
-        get_texture_from_vertex_color(self.settings.output_file)
+        get_texture_from_vertex_color(self.settings.output_file, image_name)
 
-        # apply settings
+        # update texture image
+        img = o3d.io.read_image(str(image_name)+'_texture_map.png')
+        self._image_field.update_image(img)
+
+        # apply settings2,4615485866666668713
         self.apply_settings()
