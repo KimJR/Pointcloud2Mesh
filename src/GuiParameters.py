@@ -1,7 +1,16 @@
 import open3d as o3d
 import open3d.visualization.gui as gui
 
-
+'''
+Class Parameters contains all parameters of the PointCloud2Mesh tool which are available for the user to change when the
+mesh is generated from the point cloud. 
+Those include specifying 
+    the name of the output file for the mesh, 
+    number of colors, 
+    depth of the tree used for surface reconstruction
+    and many more. 
+The different parameter will be shown over several tabs in GuiInterface.
+'''
 class Parameters:
     # first tab
     out_selected = True             # name of output file (default: mesh)
@@ -44,14 +53,12 @@ class Parameters:
         self.out_name.text_value = "mesh"
         self.out_name.placeholder_text = "mesh"
 
-
         # 2 --color <pull factor>
         self.color = gui.Checkbox("--colors")
         self.color.tooltip = "Extrapolate the color values to the vertices of the mesh\nValue = relative importance of finer color estimates over lower ones"
         self.color.set_on_checked(self.on_color)
         self.color_value = gui.NumberEdit(gui.NumberEdit.DOUBLE)
         self.color_value.set_value(16.0)
-
 
         # 3 --threads <number of processing threads>
         self.threads = gui.Checkbox("--threads")

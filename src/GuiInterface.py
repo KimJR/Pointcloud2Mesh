@@ -24,6 +24,10 @@ class Settings:
 
 
 class GUI:
+    '''
+    Class GUI represents the graphical user interface of the pointcloud2mesh tool. File chooser, Buttons to start
+    mesh and UV map calculation are provided as well as graphical elements to adjust how the calculations are performed.
+    '''
 
     actual_geometry = []
 
@@ -35,7 +39,7 @@ class GUI:
         self.settings = Settings(main_dir, my_os)
 
         # create window
-        self.window = gui.Application.instance.create_window("Poisson Surface Reconstruction", 2000, 1400)
+        self.window = gui.Application.instance.create_window("Poisson Surface Reconstruction", 2200, 1400)
         w = self.window  # for more concise code
 
         # set the window's layout
@@ -143,8 +147,19 @@ class GUI:
         self.panel.add_child(self._label)
 
         # create image
-        self._image_field = gui.ImageWidget(self.settings.model_dir+"dummy_texture.jpeg")
-        self.panel.add_child(self._image_field)
+        self._texture_image = gui.ImageWidget(self.settings.model_dir+"placeholder.png")
+        self.panel.add_child(self._texture_image)
+
+
+        # Create Label 4
+        self.panel.add_fixed(separation_height)
+        self._label = gui.Label("|4| Normal map")
+        self._label.text_color = gui.Color(1.0, 0.5, 0.0)
+        self.panel.add_child(self._label)
+
+        # create image
+        self._normal_image = gui.ImageWidget(self.settings.model_dir+"placeholder.png")
+        self.panel.add_child(self._normal_image)
 
         # ---- add settings panel + widget to window ----
         w.add_child(self.widget)
@@ -154,7 +169,10 @@ class GUI:
         self.apply_settings()
 
     def apply_settings(self):
-
+        '''
+        Method to set all GuiParameters according to the users choice,
+        which are then considered for poisson reconstruction.
+        '''
         # select parameters
         self.param.out.checked = self.param.out_selected
         self.param.color.checked = self.param.color_selected
@@ -181,17 +199,23 @@ class GUI:
         self._mesh_button.enabled = self.mesh_button_enabled
         self._uvmap_button.enabled = self.uvmap_button_enabled
 
-
-
     def _on_layout(self, layout_context):
+        '''
+        Set up the layout of the window.
+        :param layout_context:
+        :return: void
+        '''
         contentRect = self.window.content_rect
         panel_width = 15 * layout_context.theme.font_size  # 15 ems wide
         self.widget.frame = gui.Rect(contentRect.x, contentRect.y, contentRect.width - panel_width, contentRect.height)
         self.panel.frame = gui.Rect(self.widget.frame.get_right(), contentRect.y, panel_width, contentRect.height)
-    '''
-       Input file
-    '''
+
+    '''_________________________________ACTION LISTENER FOR FILE DIALOG_________________________________'''
     def _on_filedlg_button(self):
+        '''
+        Action listener for the file dialog button:
+        creates a file dialog with predefined file filters for point cloud input file selection
+        '''
         filedlg = gui.FileDialog(gui.FileDialog.OPEN, "Select input file", self.window.theme)
         filedlg.add_filter(".ply .pcd .xyz .pts ", "Point cloud files (.ply, .pcd, .xyz, .pts)")
         filedlg.add_filter(".ply", "Polygon files (.ply)")
@@ -288,7 +312,7 @@ class GUI:
         if geometry is None:
             cloud = None
             try:
-                cloud = o3d.io.read_point_cloud(path, remove_nan_points=False, remove_infinite_points=False, print_progress=True)
+                cloud = o3d.io.read_point_cloud(path, remove_nan_points=False, remove_infinite_points=False)
             except Exception:
                 pass
             if cloud is not None:
@@ -306,7 +330,7 @@ class GUI:
                 if newfile:
                     print("'generated_input.ply' is generated with normals and colors")
                     new_path = self.settings.model_dir+self.settings.gen_filename
-                    o3d.io.write_point_cloud(new_path, cloud, write_ascii=True, compressed=False, print_progress=False)
+                    o3d.io.write_point_cloud(new_path, cloud, write_ascii=True, compressed=False)
                     self._fileedit.text_value = new_path
                     self.settings.input_file = new_path
                 self.actual_geometry = cloud
@@ -328,7 +352,7 @@ class GUI:
             bounds = self.actual_geometry.get_axis_aligned_bounding_box()
             self.widget.setup_camera(60, bounds, bounds.get_center())
 
-
+    '''_________________________________ACTION LISTENER FOR BUTTON_________________________________'''
     def on_calculate_mesh(self):
         # enable uvmap button
         self.uvmap_button_enabled = True
@@ -355,7 +379,11 @@ class GUI:
         get_texture_from_vertex_color(self.settings.output_file, image_name)
 
         # show new generated mesh
-        img = o3d.io.read_image(str(image_name) + '_texture.png')
-        self._image_field.update_image(img)
+        normal = o3d.io.read_image(str(image_name) + '_normal.png')
+
+        # show texture
+        self._texture_image.update_image(o3d.io.read_image(str(image_name) + '_texture.png'))
+        # show normal map
+        self._normal_image.update_image(o3d.io.read_image(str(image_name) + '_normal.png'))
         # apply settings2,4615485866666668713
         self.apply_settings()

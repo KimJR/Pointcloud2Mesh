@@ -50,6 +50,23 @@ def get_texture_from_vertex_color(input_file: str, image_name:str, textureWidth:
 
 @jit(nopython=True, cache=True, parallel=True)
 def create_texture(vertices, faces, textureWidth, uv_coordinates, colors, normals, color_range, image_name):
+    '''
+    Create the texture for the given set of vertices. Trios of vertices form faces. For each face, given color values
+    are interpolated so that the texture of the faces can be computed without holes.
+    Texture and normal map will be returned.
+    :param vertices: The vertices of the mesh for which a texture shall be created.
+    :param faces: The faces of the mesh formed by always 3 vertices.
+    :param textureWidth: number of pixel for the texture per row.
+           The resulting texture map will contain textureWidth x textureWidth RGB values.
+    :param uv_coordinates: Each vertex can be represented by UV coordinates which are specified in this parameter.
+    :param colors: Contains the color values for each vertex in vertices. Those can be specified in RGB or RGBA but in
+           the latter case, still A will not be considered. colors must be of same length as vertices
+    :param normals: Contains the normal values for each vertex in vertices. Those can be specified in RGB or RGBA but in
+           the latter case, still A will not be considered. colors must be of same length as vertices
+    :param color_range:
+    :param image_name:
+    :return: tuple containing computed colors for each pixel position and according normal.
+    '''
     ### INIT storing arrays
     textureShape = (textureWidth, textureWidth, 3)
     pixel_color_array = np.zeros(textureShape, dtype=np.uint8)  # the texture to which the color will be mapped
@@ -101,12 +118,12 @@ def create_texture(vertices, faces, textureWidth, uv_coordinates, colors, normal
                     # color the pixel depending on the lerp between the three pixels
                     # colors might have shape of (lenOfVertices, 4) if it stores RGBA values --> only use RGB
                     pixel_color = a * colors[iVertex0, :3] + b * colors[iVertex1, :3] + c * colors[iVertex2, :3]
-
                     pixel_color_array[x, y] = pixel_color
+
                     pColor = (a * normals[iVertex0] + b * normals[iVertex1] + c * normals[iVertex2]) # / 2
                     pixel_normal_color = [255*(pColor[0] + 0.5), 255*(pColor[1] + 0.5), 255*(pColor[2] + 0.5)]
                     pixel_normal_array[x, y] = pixel_normal_color
 
-                    pixel_position_color = position_color_range * a * vertices[iVertex0] + position_color_range *b * vertices[iVertex1] + position_color_range * (c * vertices[iVertex2])
+                    pixel_position_color = position_color_range * (a * vertices[iVertex0] + b * vertices[iVertex1] + c * vertices[iVertex2])
                     pixel_position_array[x, y] = pixel_position_color
     return (pixel_position_array, pixel_normal_array)
