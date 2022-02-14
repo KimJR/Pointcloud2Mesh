@@ -17,7 +17,7 @@ class Parameters:
     grid_selected = False          # name of file to which the sampled implicit function is written
     color_selected = True           # color value (default 16)
 
-# second tab
+    # second tab
     depth_selected = False          # maximal depth of tree for surface reconstruction (default 8)
     iters_selected = False          # number of gauss-seidel relaxation at each iteration (default 8)
     degree_selected = False         # degree of B-spline: larger degree = higher order (default 2)
@@ -38,11 +38,6 @@ class Parameters:
     density_selected = False
     verbose_selected = False
 
-    # # third tab
-    # fullDepth_selected = False
-    # voxelDepth_selected = False
-    # cgDepth_selected = False
-
     def __init__(self):
         # 1 --out <name>
         self.out = gui.Checkbox("Output file")
@@ -54,7 +49,7 @@ class Parameters:
         self.out_name.placeholder_text = "mesh"
 
         # 2 --grid <output grid>
-        self.grid = gui.Checkbox("Implicit function file")
+        self.grid = gui.Checkbox("Function file")
         self.grid.tooltip = "Name of the file to which the sampled implicit function will be written (binary)"
         self.grid.set_on_checked(self.on_grid)
         self.grid_name = gui.TextEdit()
@@ -113,7 +108,7 @@ class Parameters:
         self.pointWeight_value.set_value(4)
 
         # 11 --samplesPerNode <minimum number of samples>
-        self.samplesPerNode = gui.Checkbox("--samplesPerNode")
+        self.samplesPerNode = gui.Checkbox("Samples Per Node")
         self.samplesPerNode.tooltip = "Specifies the minimum number of sample points that should fall within an octree node as the octree construction is adapted to sampling density.\nnoise-free samples: [1.0 - 5.0], noisy samples: [15.0 - 20.0]"
         self.samplesPerNode.set_on_checked(self.on_samplesPerNode)
         self.samplesPerNode_value = gui.NumberEdit(gui.NumberEdit.DOUBLE)
@@ -147,27 +142,6 @@ class Parameters:
         self.verbose = gui.Checkbox("Verbose")
         self.verbose.tooltip = "Verbose description of the running times and memory usages of individual components"
         self.verbose.set_on_checked(self.on_verbose)
-
-        # 7 --fullDepth <adaptive octree depth>
-        # self.fullDepth = gui.Checkbox("--fullDepth")
-        # self.fullDepth.tooltip = "Specifies the depth beyond depth the octree will be adapted"
-        # self.fullDepth.set_on_checked(self.on_fullDepth)
-        # self.fullDepth_value = gui.NumberEdit(gui.NumberEdit.INT)
-        # self.fullDepth_value.set_value(5)
-        #
-        # # 8 --voxelDepth <voxel sampling depth>
-        # self.voxelDepth = gui.Checkbox("--voxelDepth")
-        # self.voxelDepth.tooltip = "Specifies the depth beyond depth the octree will be adapted"
-        # self.voxelDepth.set_on_checked(self.on_voxelDepth)
-        # self.voxelDepth_value = gui.NumberEdit(gui.NumberEdit.INT)
-        # self.voxelDepth_value.set_value(8)
-        #
-        # # 9 --cgDepth <conjugate gradients solver depth>
-        # self.cgDepth = gui.Checkbox("--cgDepth")
-        # self.cgDepth.tooltip = "Depth up to which a conjugate-gradients solver will be used to solve the linear system.\nBeyond this depth Gauss-Seidel relaxation will be used"
-        # self.cgDepth.set_on_checked(self.on_cgDepth)
-        # self.cgDepth_value = gui.NumberEdit(gui.NumberEdit.INT)
-        # self.cgDepth_value.set_value(0)
 
 
     '''
@@ -218,41 +192,18 @@ class Parameters:
         return grid
 
     def tab3(self, em):
-        grid = gui.VGrid(2, 0.25 * em)
+        grid = gui.VGrid(1, 0.25 * em)
         grid.add_child(self.confidence)
         grid.add_child(self.linearFit)
         grid.add_child(self.nWeights)
 
-        h = gui.Horiz(0.25 * em)  # row 2
+        h = gui.Horiz(0.25 * em)
         h.add_child(self.pointWeight)
         h.add_stretch()
         h.add_child(self.pointWeight_value)
         grid.add_child(h)
 
         return grid
-    #
-    # def tab3(self, em):
-    #     grid = gui.VGrid(1, 0.25 * em)
-    #
-    #     h = gui.Horiz(0.25 * em)  # row 1
-    #     h.add_child(self.fullDepth)
-    #     h.add_stretch()
-    #     h.add_child(self.fullDepth_value)
-    #     grid.add_child(h)
-    #     h = gui.Horiz(0.25 * em)  # row 2
-    #     h.add_child(self.cgDepth)
-    #     h.add_stretch()
-    #     h.add_child(self.cgDepth_value)
-    #     grid.add_child(h)
-    #     # h = gui.Horiz(0.25 * em)  # row 3
-    #     # h.add_child(self.voxelDepth)
-    #     # h.add_stretch()
-    #     # h.add_child(self.voxelDepth_value)
-    #
-    #     grid.add_child(h)
-    #
-    #     return grid
-
 
     def tab4(self, em):
         grid = gui.VGrid(1, 0.25 * em)
@@ -304,15 +255,6 @@ class Parameters:
 
     def on_depth(self, selected):
         self.depth_selected = selected
-
-    # def on_fullDepth(self, selected):
-    #     self.fullDepth_selected = selected
-    #
-    # def on_voxelDepth(self, selected):
-    #     self.voxelDepth_selected = selected
-    #
-    # def on_cgDepth(self, selected):
-    #     self.cgDepth_selected = selected
 
     def on_scale(self, selected):
         self.scale_selected = selected

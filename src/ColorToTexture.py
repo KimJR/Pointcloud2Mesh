@@ -36,17 +36,21 @@ def get_texture_from_vertex_color(input_file: str, image_name:str, textureWidth:
     color_range = ranges[np.argmax(ranges)]  # np.argmax returns position of max value --> in ranges to get value
 
     # UV COORDINATES (of Vertices)
-    (pixel_position_array, pixel_normal_array) = create_texture(vertices, indices, textureWidth, uvs, vertex_colors, vertex_normals, color_range, image_name)
+    (pixel_color_array, pixel_normal_array, pixel_position_array) = create_texture(vertices, indices, textureWidth, uvs, vertex_colors, vertex_normals, color_range, image_name)
 
-    cv = trimesh.visual.color.ColorVisuals(mesh, None, pixel_position_array)
+    cv = trimesh.visual.color.ColorVisuals(mesh, None, pixel_color_array)
 
     # save texture map
-    im = Image.fromarray(pixel_position_array)
+    im = Image.fromarray(pixel_color_array)
     im.save(str(image_name) + '_texture.png')
 
     # save normal map
     im_n = Image.fromarray(pixel_normal_array)
     im_n.save(str(image_name) + '_normal.png')
+
+    # save position map
+    im_n = Image.fromarray(pixel_position_array)
+    im_n.save(str(image_name) + '_position.png')
 
 @jit(nopython=True, cache=True, parallel=True)
 def create_texture(vertices, faces, textureWidth, uv_coordinates, colors, normals, color_range, image_name):
@@ -65,7 +69,7 @@ def create_texture(vertices, faces, textureWidth, uv_coordinates, colors, normal
            the latter case, still A will not be considered. colors must be of same length as vertices
     :param color_range:
     :param image_name:
-    :return: tuple containing computed colors for each pixel position and according normal.
+    :return: tuple containing computed colors for each pixel colors, according normals and positions.
     '''
     ### INIT storing arrays
     textureShape = (textureWidth, textureWidth, 3)
@@ -126,4 +130,4 @@ def create_texture(vertices, faces, textureWidth, uv_coordinates, colors, normal
 
                     pixel_position_color = position_color_range * (a * vertices[iVertex0] + b * vertices[iVertex1] + c * vertices[iVertex2])
                     pixel_position_array[x, y] = pixel_position_color
-    return (pixel_color_array, pixel_normal_array)
+    return (pixel_color_array, pixel_normal_array, pixel_position_array)

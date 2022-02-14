@@ -94,22 +94,17 @@ class GUI:
         tabs.add_tab(" 1 ", self.param.tab1(em))
         # tab 2
         tabs.add_tab(" 2 ", self.param.tab2(em))
-        # # tab 3
-        # self.param.fullDepth_value.set_preferred_width(5.5 * em)
-        # self.param.cgDepth_value.set_preferred_width(5.5 * em)
-        # self.param.voxelDepth_value.set_preferred_width(5.5 * em)
-        # tabs.add_tab(" 3 ", self.param.tab3(em))
-        # tab 4
+        # tab 3
         self.param.depth_value.set_preferred_width(5.5 * em)
         self.param.iters_value.set_preferred_width(5.5 * em)
         self.param.pointWeight_value.set_preferred_width(5.5 * em)
         tabs.add_tab(" 3 ", self.param.tab3(em))
-        # tab 5
+        # tab 4
         self.param.samplesPerNode_value.set_preferred_width(3 * em)
         self.param.threads_value.set_preferred_width(5.5 * em)
         self.param.degree_value.set_preferred_width(5.5 * em)
         tabs.add_tab(" 4 ", self.param.tab4(em))
-        # tab 6
+        # tab 5
         tabs.add_tab(" 5 ", self.param.tab5(em))
 
         # add tabs to panel
@@ -180,9 +175,6 @@ class GUI:
         self.param.pointWeight.checked = self.param.pointWeight_selected
         self.param.grid.checked = self.param.grid_selected
         self.param.depth.checked = self.param.depth_selected
-        # self.param.fullDepth.checked = self.param.fullDepth_selected
-        # self.param.voxelDepth.checked = self.param.voxelDepth_selected
-        # self.param.cgDepth.checked = self.param.cgDepth_selected
         self.param.scale.checked = self.param.scale_selected
         self.param.samplesPerNode.checked = self.param.samplesPerNode_selected
         self.param.iters.checked = self.param.iters_selected
