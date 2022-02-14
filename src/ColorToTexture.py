@@ -117,13 +117,13 @@ def create_texture(vertices, faces, textureWidth, uv_coordinates, colors, normal
                 if 0 <= a and 0 <= b and 0 <= c and (a + b + c) <= 1:
                     # color the pixel depending on the lerp between the three pixels
                     # colors might have shape of (lenOfVertices, 4) if it stores RGBA values --> only use RGB
-                    pixel_color = a * colors[iVertex0, :3] + b * colors[iVertex1, :3] + c * colors[iVertex2, :3]
+                    pixel_color = (a * colors[iVertex0, :3] + b * colors[iVertex1, :3] + c * colors[iVertex2, :3])
                     pixel_color_array[x, y] = pixel_color
 
-                    pColor = (a * normals[iVertex0] + b * normals[iVertex1] + c * normals[iVertex2]) # / 2
-                    pixel_normal_color = [255*(pColor[0] + 0.5), 255*(pColor[1] + 0.5), 255*(pColor[2] + 0.5)]
+                    pColor = (a * normals[iVertex0] + b * normals[iVertex1] + c * normals[iVertex2])/2
+                    pixel_normal_color = [int(255*(pColor[0] + 0.5)), int(255*(pColor[1] + 0.5)), int(255*(pColor[2] + 0.5))]
                     pixel_normal_array[x, y] = pixel_normal_color
 
                     pixel_position_color = position_color_range * (a * vertices[iVertex0] + b * vertices[iVertex1] + c * vertices[iVertex2])
                     pixel_position_array[x, y] = pixel_position_color
-    return (pixel_position_array, pixel_normal_array)
+    return (pixel_color_array, pixel_normal_array)

@@ -51,18 +51,18 @@ def run_poisson_reconstruction(self, input_file: str="input.ply", output_file:st
         command += "--degree {} ".format(self.param.degree_value.int_value)
     if self.param.color_selected:
         command += "--color {} ".format(self.param.color_value.double_value)
-    if self.param.voxel_selected:
-        command += "--voxel {} ".format(self.param.voxel_name.text_value)
+    if self.param.grid_selected:
+        command += "--grid {} ".format(self.param.grid_name.text_value)
     if self.param.depth_selected:
         command += "--depth {} ".format(self.param.depth_value.int_value)
-    if self.param.fullDepth_selected:
-        command += "--fullDepth {} ".format(self.param.fullDepth_value.int_value)
-    if self.param.voxelDepth_selected:
-        command += "--voxelDepth {} ".format(self.param.voxelDepth_value.int_value)
+    # if self.param.fullDepth_selected:
+    #     command += "--fullDepth {} ".format(self.param.fullDepth_value.int_value)
+    # if self.param.voxelDepth_selected:
+    #     command += "--voxelDepth {} ".format(self.param.voxelDepth_value.int_value)
     if self.param.primalVoxel_selected:
         command += "--primalVoxel "
-    if self.param.cgDepth_selected:
-        command += "--cgDepth {} ".format(self.param.cgDepth_value.int_value)
+    # if self.param.cgDepth_selected:
+    #     command += "--cgDepth {} ".format(self.param.cgDepth_value.int_value)
     if self.param.scale_selected:
         command += "--scale {} ".format(self.param.scale_value.double_value)
     if self.param.samplesPerNode_selected:
@@ -77,8 +77,6 @@ def run_poisson_reconstruction(self, input_file: str="input.ply", output_file:st
         command += "--confidence "
     if self.param.nWeights_selected:
         command += "--nWeights "
-    if self.param.polygonMesh_selected:
-        command += "--polygonMesh "
     if self.param.density_selected:
         command += "--density "
     if self.param.verbose_selected:
